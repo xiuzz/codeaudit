@@ -21,8 +21,6 @@ import java.time.LocalDateTime;
 public class UserController {
 @Resource
     private UserService userService;
-@Resource
-private ExpiringMap<String,Long> expiringMap;
 
     /**
      * 用户登录功能
