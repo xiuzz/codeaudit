@@ -29,6 +29,7 @@ public class SqlMybatisController {
   private SqlMybatisService mybatisService;
  @PostMapping("/code")
   public R<String> code(MultipartFile file){
+     if(file.isEmpty())return  R.error("文件为空！");
      BufferedReader bufferedReader= null;
      log.info(file.toString());
      String code=null;
