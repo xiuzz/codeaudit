@@ -2,16 +2,18 @@ package org.async.codeaudit.controller.audit.sql;
 
 import lombok.extern.slf4j.Slf4j;
 import org.async.codeaudit.common.R;
+import org.async.codeaudit.common.Security;
 import org.async.codeaudit.service.TraversalService;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 
 /**
  * 路径穿越（目录遍历）,
@@ -54,5 +56,58 @@ public class TraversalController {
             e.printStackTrace();
         }
         return  traversalService.code(code);
+    }
+    /**
+     * 这里可以模拟
+     * 实际想发送/当前目录下的文件
+     *进行 ，，/路径穿越演示，
+     * 最后我们向前端发送两次不一样的文件
+     * @poc http:///traversal/study/download?filename=../../../../../../../etc/passwd
+     */
+    @GetMapping("study/download")
+    public String download(String filename, HttpServletRequest request, HttpServletResponse response) {
+        // 下载的文件路径
+        String filePath = System.getProperty("user.dir") + "/logs/" + filename;
+        System.out.println("[*] 文件目录: " + filePath);
+
+        // 使用流的形式下载文件
+        try {
+            // 加载文件
+            File file = new File(filePath);
+            InputStream fis = new BufferedInputStream(new FileInputStream(file));
+            byte[] buffer = new byte[fis.available()];
+            fis.read(buffer);
+            fis.close();
+
+            // 设置response的Header
+            response.reset();
+            response.addHeader("Content-Disposition", "attachment;filename=" + filename);
+            response.addHeader("Content-Length", "" + file.length());
+            OutputStream toClient = new BufferedOutputStream(response.getOutputStream());
+            response.setContentType("application/octet-stream");
+            toClient.write(buffer);
+            toClient.flush();
+            toClient.close();
+            return "下载文件成功：" + filePath;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "未找到文件：" + filePath;
+        }
+    }
+
+    /**
+     * 采用过滤的方法
+     * 到时候再让前端发送一样的请求
+     * @poc http:///study/traversal/download/safe?filename=../
+     */
+    @GetMapping("study/download/safe")
+    public String download_safe(String filename) {
+
+        if (!Security.checkTraversal(filename)) {
+            String filePath = System.getProperty("user.dir") + "/logs/" + filename;
+            return "安全路径：" + filePath;
+        } else {
+            return "检测到非法遍历";
+        }
     }
 }

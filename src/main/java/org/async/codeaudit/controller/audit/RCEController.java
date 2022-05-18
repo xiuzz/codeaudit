@@ -1,5 +1,6 @@
 package org.async.codeaudit.controller.audit;
 
+import lombok.extern.slf4j.Slf4j;
 import org.async.codeaudit.common.R;
 import org.async.codeaudit.common.Security;
 import org.async.codeaudit.service.RCEService;
@@ -17,9 +18,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/rce")
+@Slf4j
 public class RCEController {
     private RCEService rceService;
     /**
@@ -36,9 +39,41 @@ public class RCEController {
      * @param file
      * @return
      */
+    /**
+     * rce漏洞属于大型漏洞有多种
+     * 不过我们作为审计
+     * 其实不必要管他的结果，既造成命令执行，和代码注入
+     * 我们只需要关注成因就可以了
+     * 但是java第三方库又多
+     * 很难鉴别，不如之前的log4jRCE漏洞
+     * 我们这里就只审计java本地方法
+     * 一个是ProcessBuilder
+     * 另一个是Runtime
+     * ProcessBuilder
+     */
     @PostMapping("/code")
     public R<String> code(MultipartFile file){
-        return  null;
+        //这里一样进行预处理
+        if(file.isEmpty())return  R.error("文件为空！");
+        BufferedReader bufferedReader= null;
+        log.info(file.toString());
+        String code=null;
+        R<String> res=null;
+        try {
+            bufferedReader = new BufferedReader(new InputStreamReader(file.getInputStream()));
+            StringBuilder temp=new StringBuilder();
+            while((code=bufferedReader.readLine())!=null){
+                temp.append(code);
+            }
+            code=temp.toString();
+            bufferedReader.close();
+            Pattern pattern = Pattern.compile("Runtime\\.getRuntime\\(\\)\\.exec\\((.+)\\);");
+            if(pattern.matcher(code).find())res=rceService.runtimeCode(code);
+            else res=rceService.pbCode(code);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+         return  res;
     }
     /**
      * @vul 调用ProcessBuilder执行ls命令，接收参数filepath，拼接命令语句
@@ -143,7 +178,6 @@ public class RCEController {
             // ScriptEngine engine = new ScriptEngineManager().getEngineByName("JavaScript");
             // 通过文件扩展名获取
             ScriptEngine engine = new ScriptEngineManager().getEngineByExtension("js");
-
             // Bindings：用来存放数据的容器
             Bindings bindings = engine.getBindings(ScriptContext.ENGINE_SCOPE);
             String payload = String.format("load('%s')", url);
@@ -160,7 +194,7 @@ public class RCEController {
      */
 
     @RequestMapping("study/processBuilder/safe")
-    public static String processbuilderSafe(String filepath) {
+    public static String processBuilderSafe(String filepath) {
 
         if (! Security.checkOs(filepath)) {
 

@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
-   网络协议类漏洞的综合工具类
+  综合工具类
  */
 public class Security {
 
