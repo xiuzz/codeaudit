@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 @Slf4j
 @RestController
@@ -33,7 +36,22 @@ public class SSRFController {
      */
     @PostMapping("/code")
    public R<String> code(MultipartFile file){
-       return  null;
+        if(file.isEmpty())return  R.error("文件为空！");
+        BufferedReader bufferedReader= null;
+        log.info(file.toString());
+        String code=null;
+        try {
+            bufferedReader = new BufferedReader(new InputStreamReader(file.getInputStream()));
+            StringBuilder temp=new StringBuilder();
+            while((code=bufferedReader.readLine())!=null){
+                temp.append(code);
+            }
+            code=temp.toString();
+            bufferedReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return ssrfService.code(code);
    }
     /**
      * @poc http:///SSRF/study/urlConnection?url=http://www.baidu.com
