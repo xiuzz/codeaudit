@@ -8,9 +8,11 @@ import java.time.LocalDateTime;
 @Data
 public class Result  implements Serializable {
     private  static final  long serialVersionUID =1L;
-    private String uid;
-    private String result;
+    private Long id;
+    private Long uid;
+    private String result;//data
     private LocalDateTime sendTime;
-    private String remarks;
+    private String remarks;//msg
     private String color;
+    private String type;
 }

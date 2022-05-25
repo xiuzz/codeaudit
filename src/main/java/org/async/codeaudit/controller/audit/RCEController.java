@@ -32,7 +32,7 @@ public class RCEController {
      * 避免不可信数据拼接操作系统命令
      *  当不可信数据存在时，应尽量避免外部数据拼接到操作系统命令使用 Runtime 和 ProcessBuilder 来执行。优先使用其他同类操作进行代替，比如通过文件系统API进行文件操作而非直接调用操作系统命令。
      *  这个是面向java本身的，而且审计也相对于容易
-     * RCE需要关注的函数
+     * RCE需要关注的函数`
      *  1. ProcessBuilder类: new ProcessBuilder(cmdArray).start()
      *  2. Runtime类：Runtime.getRuntime().exec()
      *  3. groovy类//这个要不要审计呢？

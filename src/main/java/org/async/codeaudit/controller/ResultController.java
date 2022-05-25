@@ -20,7 +20,7 @@ public class ResultController {
     //直接发送请求就可以了，不需要携带参数，直接通过session存的uid查
     @GetMapping("/get")
     public R<List<Result>> getByUId(HttpServletRequest request){
-        String user =(String)request.getSession().getAttribute("user");
+        Long user =(Long)request.getSession().getAttribute("user");
         LambdaQueryWrapper<Result> lambdaQueryWrapper=new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(Result::getUid,user);
         List<Result> list = resultService.list(lambdaQueryWrapper);
@@ -30,10 +30,12 @@ public class ResultController {
     @PostMapping("/set")
    public R<String> setByUId(@RequestBody Result result,HttpServletRequest request){
           result.setSendTime(LocalDateTime.now());
-        String user = (String) request.getSession().getAttribute("user");
-         result.setUid(user);
-         log.info(result.toString());
-       resultService.save(result);
+        long id = Thread.currentThread().getId();
+        log.info(result.toString());
+        Long uid =(Long)request.getSession().getAttribute("user");
+        result.setUid(uid);
+        log.info(result.toString());
+        resultService.save(result);
        return R.success("接收成功");
     }
 }

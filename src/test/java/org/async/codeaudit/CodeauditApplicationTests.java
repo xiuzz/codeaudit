@@ -2,7 +2,9 @@ package org.async.codeaudit;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.util.DigestUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,5 +54,8 @@ class CodeauditApplicationTests {
         System.out.println(matcher1.find());
 
     }
-
+ @Test
+    void encode(){
+     System.out.println(DigestUtils.md5DigestAsHex("123456".getBytes(StandardCharsets.UTF_8)));
+ }
 }

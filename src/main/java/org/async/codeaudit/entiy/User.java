@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 @Data
 public class User implements Serializable {
     private  static final  long serialVersionUID =1L;
-    private  Long uid;
-    private String userName;
+    private  Long id;
+    private String username;
     private String password;
     private LocalDateTime createTime;
     private String socialAddress;
